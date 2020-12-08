@@ -29,6 +29,30 @@ class Customer {
     return results.rows.map(c => new Customer(c));
   }
 
+  /** respond to customer search */
+  static async search(lastName) {
+    const results = await db.query(
+      `SELECT id,
+        first_name AS "firstName",  
+        last_name AS "lastName",
+        phone,
+        notes
+      FROM customers 
+      WHERE last_name = $1`,
+      [lastName]
+    );
+    let customersArr = results.rows;
+    if (customersArr.length === 0) {
+      return "No customers found that match the search term"
+    }
+    const customers = customersArr.map(cust => {
+      const customer = new Customer(cust);
+      return customer;
+    });
+
+    return customers;
+  }
+
   /** get a customer by ID. */
 
   static async get(id) {
@@ -43,6 +67,7 @@ class Customer {
     );
 
     const customer = results.rows[0];
+    console.log(customer);
 
     if (customer === undefined) {
       const err = new Error(`No such customer: ${id}`);
